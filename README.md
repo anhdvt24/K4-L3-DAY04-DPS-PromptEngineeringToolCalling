@@ -77,6 +77,33 @@ python run_eval.py --provider openrouter --version v0 --suite base --eval-cases 
 
 Thay `openrouter` bằng `openai`, `anthropic` hoặc `gemini` khi dùng provider khác. Không commit `.env`.
 
+## Trợ lý du lịch của nhóm (Sao Viet Travel)
+
+Nhóm đổi lĩnh vực sang **du lịch**: trợ lý tư vấn và đặt tour cho công ty hư cấu Sao Viet Travel. Toàn bộ dữ liệu là giả lập trong `starter_v0/travel_data/`. Bộ IT gốc giữ nguyên để tham khảo (`data/eval_base.json`, `artifacts/it_reference/`). Báo cáo: [starter_v0/artifacts/REPORT.md](starter_v0/artifacts/REPORT.md).
+
+Chạy từ thư mục `starter_v0` (điền `GEMINI_API_KEY` vào `.env`; `TAVILY_API_KEY` chỉ cần cho tìm kiếm web):
+
+| Bộ case | File | Lệnh |
+|---|---|---|
+| Cơ bản 30 câu (20 + 10) | `data/eval_travel_base.json` | `python run_eval.py --provider gemini --version v3 --suite base --eval-cases data/eval_travel_base.json` |
+| An toàn 12 câu | `data/eval_travel_adversarial.json` | `python run_eval.py --provider gemini --version v3 --suite adversarial --eval-cases data/eval_travel_adversarial.json` |
+| Nhóm 10 câu (5 + 5) | `data/eval_group.json` | `python run_eval.py --provider gemini --version v3 --suite group --eval-cases data/eval_group.json` |
+| Mở rộng `check_booking_status` | `data/eval_travel_extension.json` | `python run_eval.py --provider gemini --version v3 --suite extension --eval-cases data/eval_travel_extension.json` |
+
+Kiểm tra tool và bộ case offline, không gọi model:
+
+```powershell
+python scripts/smoke_travel_tools.py
+```
+
+UI chat hiển thị tool call, input, kết quả/lỗi và artifact version, đồng thời lưu hội thoại vào `transcripts/`:
+
+```powershell
+streamlit run ui.py
+```
+
+Gemini free tier giới hạn 15 request/phút; provider tự chờ `retryDelay` khi gặp lỗi 429. Chạy các suite lần lượt, không chạy song song.
+
 ## Tài liệu cần đọc
 
 | File | Dùng khi |
