@@ -5,6 +5,8 @@ from typing import Any
 
 import requests
 
+from tools._travel import INTERNAL_ID_PATTERN, contains_sensitive_data
+
 
 TAVILY_SEARCH_URL = "https://api.tavily.com/search"
 
@@ -54,6 +56,18 @@ def search_travel_info(
                 f"Unsupported category '{category}'. "
                 f"Use one of: {sorted(ALLOWED_CATEGORIES)}"
             ),
+        }
+
+    # Privacy boundary: internal IDs and secrets never leave the system.
+    if INTERNAL_ID_PATTERN.search(f"{query} {destination}"):
+        return {
+            "error": "restricted_internal_identifier",
+            "message": "Remove customer IDs, booking codes and tour IDs before searching the public web.",
+        }
+    if contains_sensitive_data(f"{query} {destination}"):
+        return {
+            "error": "restricted_sensitive_data",
+            "message": "Remove card numbers, OTP, passwords and ID numbers before searching the public web.",
         }
 
     max_results = max(1, min(int(max_results), 10))

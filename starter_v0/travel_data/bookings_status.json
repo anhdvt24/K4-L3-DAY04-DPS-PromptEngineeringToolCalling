@@ -1,0 +1,9 @@
+{
+  "snapshot_at": "2026-09-15T08:00:00+07:00",
+  "source": "Fictional Sao Viet Travel booking store",
+  "bookings": [
+    {"booking_code": "BK-7788", "customer_id": "KH-1001", "tour_id": "TOUR-DL01", "departure_date": "2026-10-20", "guests": 2, "status": "confirmed", "payment_status": "paid", "total_vnd": 6980000, "updated_at": "2026-09-10T09:30:00+07:00"},
+    {"booking_code": "BK-7790", "customer_id": "KH-1002", "tour_id": "TOUR-HL05", "departure_date": "2026-11-01", "guests": 2, "status": "cancelled_by_operator", "payment_status": "refund_pending", "total_vnd": 6580000, "cancel_reason": "Thời tiết xấu, cảng Hạ Long tạm đóng", "updated_at": "2026-09-14T16:00:00+07:00"},
+    {"booking_code": "BK-7791", "customer_id": "KH-1001", "tour_id": "TOUR-PQ02", "departure_date": "2026-11-15", "guests": 3, "status": "pending_payment", "payment_status": "deposit_paid", "total_vnd": 20670000, "balance_due_date": "2026-11-01", "updated_at": "2026-09-12T11:05:00+07:00"}
+  ]
+}

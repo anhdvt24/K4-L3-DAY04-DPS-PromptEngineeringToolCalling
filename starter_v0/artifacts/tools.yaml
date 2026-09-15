@@ -1,10 +1,9 @@
-# starter_v0 — intentionally incomplete first-draft declarations.
-# Students improve routing guidance, argument conventions, missing-information
-# handling, and confirmation boundaries through v1/v2/v3.
+# Sao Viet Travel assistant — v0 first-draft declarations (intentionally brief).
+# Improve routing guidance, argument conventions, missing-information handling
+# and confirmation boundaries through v1/v2/v3 using run evidence.
 #
-# Keep built-in names and supplied evaluation cases unchanged.
-# Improve descriptions and compatible schemas. Declare team-built bonus tools
-# here and in tools/__init__.py, then test them with team-authored cases.
+# Tool names are fixed by data/eval_travel_*.json. The original IT Helpdesk
+# declarations are kept in artifacts/it_reference/tools.yaml.
 tools:
   # ---------------- Core tools ----------------
   - name: clarify
@@ -17,96 +16,67 @@ tools:
         options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn"}
       required: [question]
 
-  - name: search_kb
-    description: "Tìm hướng dẫn hỗ trợ kỹ thuật."
+  - name: search_travel_guide
+    description: "Tìm cẩm nang du lịch."
     parameters:
       type: object
       properties:
         query: {type: string, default: "", description: "Nội dung cần tìm"}
-        category: {type: string, enum: [all, vpn, email, wifi, printing, account, security, hardware, software, meeting_room], default: "all", description: "Nhóm hướng dẫn"}
+        category: {type: string, enum: [all, visa, luggage, destination, health, payment], default: "all", description: "Nhóm cẩm nang"}
         top_k: {type: integer, default: 3, description: "Số kết quả"}
       required: [query]
 
-  - name: check_service_status
-    description: "Kiểm tra trạng thái một dịch vụ."
+  - name: check_tour_availability
+    description: "Kiểm tra chỗ trống của tour."
     parameters:
       type: object
       properties:
-        service: {type: string, enum: [vpn, email, sso, wifi, printing], description: "Tên dịch vụ"}
-        environment: {type: string, enum: [production, staging], default: "production", description: "Môi trường"}
-      required: [service]
+        tour_id: {type: string, description: "Mã tour"}
+        departure_date: {type: string, description: "Ngày khởi hành"}
+        guests: {type: integer, default: 1, description: "Số khách"}
+      required: [tour_id, departure_date]
 
-  - name: inspect_device
-    description: "Kiểm tra thông tin và chẩn đoán thiết bị."
+  - name: check_transport_status
+    description: "Kiểm tra tình trạng phương tiện."
     parameters:
       type: object
       properties:
-        asset_id: {type: string, description: "Mã tài sản"}
-        check: {type: string, enum: [all, network, vpn, security, hardware, software], default: "all", description: "Nhóm kiểm tra"}
-      required: [asset_id]
+        mode: {type: string, enum: [flight, train, bus, ferry], description: "Loại phương tiện"}
+        route: {type: string, description: "Chặng"}
+      required: [mode, route]
 
-  - name: lookup_user
-    description: "Tra cứu người dùng trong danh bạ hỗ trợ."
+  - name: lookup_customer
+    description: "Tra cứu khách hàng."
     parameters:
       type: object
       properties:
-        employee_id: {type: string, description: "Mã nhân viên"}
-      required: [employee_id]
+        customer_id: {type: string, description: "Mã khách hàng"}
+      required: [customer_id]
 
-  - name: format_incident_report
-    description: "Trình bày các kết quả đã có thành báo cáo."
-    parameters:
-      type: object
-      properties:
-        findings:
-          type: array
-          default: []
-          description: "Các kết quả đã thu thập"
-          items:
-            type: object
-            properties:
-              label: {type: string}
-              detail: {type: string}
-              source: {type: string}
-              status: {type: string}
-        template: {type: string, enum: [brief, technical, handoff], default: "brief", description: "Mẫu báo cáo"}
-        incident_title: {type: string, default: "IT incident", description: "Tiêu đề"}
-      required: [findings, template]
-
-  # ---------------- Optional/advanced tools ----------------
-  - name: search_device_info
-    description: "Tìm thông tin công khai về một model thiết bị trên web. Chỉ truyền hãng, model và loại thông tin; không truyền asset ID, employee ID hoặc dữ liệu nội bộ."
-    parameters:
-      type: object
-      properties:
-        manufacturer: {type: string, description: "Hãng sản xuất công khai, ví dụ Lenovo"}
-        model: {type: string, description: "Tên model công khai, ví dụ ThinkPad T14 Gen 4"}
-        query_type: {type: string, enum: [specs, drivers, support, compatibility], default: "support", description: "Loại thông tin cần tìm"}
-        max_results: {type: integer, default: 3, description: "Số kết quả, tối đa 5"}
-      required: [manufacturer, model, query_type]
-
-  - name: policy
-    description: "Tìm trong chính sách IT nội bộ."
+  - name: travel_policy
+    description: "Tìm trong chính sách của công ty du lịch."
     parameters:
       type: object
       properties:
         query: {type: string, default: "", description: "Nội dung cần tìm"}
-        policy_area: {type: string, enum: [all, access_control, data_privacy, external_tools, incident_response, service_operations, ticketing], default: "all", description: "Nhóm chính sách"}
+        policy_area: {type: string, enum: [all, cancellation, refund, children, privacy, booking, external_tools], default: "all", description: "Nhóm chính sách"}
         top_k: {type: integer, default: 3, description: "Số mục"}
       required: [query]
 
-  - name: create_ticket
-    description: "Tạo một ticket hỗ trợ."
+  - name: create_booking
+    description: "Tạo đặt tour."
     parameters:
       type: object
       properties:
-        summary: {type: string, default: "", description: "Tóm tắt sự cố"}
-        priority: {type: string, enum: [low, medium, high, critical], default: "medium", description: "Mức ưu tiên"}
-        asset_id: {type: string, default: "", description: "Mã tài sản nếu có"}
+        tour_id: {type: string, description: "Mã tour"}
+        departure_date: {type: string, description: "Ngày khởi hành"}
+        guests: {type: integer, description: "Số khách"}
+        customer_id: {type: string, description: "Mã khách hàng"}
+        note: {type: string, default: "", description: "Ghi chú"}
         confirmed: {type: boolean, default: false, description: "Đã được người dùng xác nhận"}
-      required: [summary]
+      required: [tour_id, departure_date, guests, customer_id]
 
-  # ---------------- Travel tools ----------------
+  # ---------------- Optional external search ----------------
   - name: search_travel_info
     description: >
       Search the public web for current travel information using Tavily.
@@ -136,3 +106,13 @@ tools:
           default: 5
           description: "Maximum number of web results."
       required: [query]
+
+  # ---------------- Team-built extension (bonus) ----------------
+  - name: check_booking_status
+    description: "Tra tình trạng đặt chỗ."
+    parameters:
+      type: object
+      properties:
+        booking_code: {type: string, description: "Mã booking"}
+        customer_id: {type: string, description: "Mã khách hàng"}
+      required: [booking_code, customer_id]

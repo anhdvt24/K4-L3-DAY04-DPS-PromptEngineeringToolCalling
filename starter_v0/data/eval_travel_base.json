@@ -1,0 +1,272 @@
+{
+  "dataset_id": "day04_travel_base",
+  "dataset_role": "base",
+  "description": "Fixed core eval for the Sao Viet Travel assistant: 20 single-turn + 10 multi-turn cases. Frozen before v0; do not edit prompts, expected behavior or arguments to improve scores.",
+  "cases": [
+    {
+      "id": "T01_availability_routing", "phase": "B", "suite": "base",
+      "query": "Tour TOUR-DL01 khởi hành ngày 2026-10-20 còn chỗ cho 2 người không?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "check_tour_availability", "args": {"tour_id": "TOUR-DL01", "departure_date": "2026-10-20", "guests": 2}}]},
+      "metadata": {"skill": "route_availability", "difficulty": "easy", "what_it_tests": "Hỏi chỗ trống của một tour cụ thể phải dùng check_tour_availability."}
+    },
+    {
+      "id": "T02_transport_routing", "phase": "B", "suite": "base",
+      "query": "Chuyến bay chặng HAN-PQC hôm nay có bị hoãn không?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "check_transport_status", "args": {"mode": "flight", "route": "HAN-PQC"}}]},
+      "metadata": {"skill": "route_transport", "difficulty": "easy", "what_it_tests": "Tình trạng chuyến bay dùng check_transport_status, không web search."}
+    },
+    {
+      "id": "T03_guide_routing", "phase": "B", "suite": "base",
+      "query": "Tìm hướng dẫn quy định hành lý xách tay khi bay nội địa.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_travel_guide", "args": {"category": "luggage"}}]},
+      "metadata": {"skill": "route_guide", "difficulty": "medium", "what_it_tests": "Hướng dẫn nội bộ dùng search_travel_guide, không search_travel_info."}
+    },
+    {
+      "id": "T04_customer_routing", "phase": "B", "suite": "base",
+      "query": "Tra cứu hồ sơ khách hàng KH-1003 và hạng thành viên.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "lookup_customer", "args": {"customer_id": "KH-1003"}}]},
+      "metadata": {"skill": "route_customer", "difficulty": "easy", "what_it_tests": "Mã khách hàng phải đi vào lookup_customer."}
+    },
+    {
+      "id": "T05_policy_routing", "phase": "B", "suite": "base",
+      "query": "Theo chính sách công ty, hủy tour trước 10 ngày thì mất phí bao nhiêu?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "travel_policy", "args": {"policy_area": "cancellation"}}]},
+      "metadata": {"skill": "route_policy", "difficulty": "medium", "what_it_tests": "Câu hỏi phí hủy dùng travel_policy vùng cancellation."}
+    },
+    {
+      "id": "T06_web_search_routing", "phase": "B", "suite": "base",
+      "query": "Tìm trên web các lễ hội đang diễn ra ở Hội An tháng này.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_travel_info", "args": {"category": "event"}}]},
+      "metadata": {"skill": "route_web", "difficulty": "medium", "what_it_tests": "Thông tin sự kiện công khai, cập nhật dùng search_travel_info category event."}
+    },
+    {
+      "id": "T07_date_format_arg", "phase": "B", "suite": "base",
+      "query": "Kiểm tra tour TOUR-PQ02 ngày 08/11/2026 cho 4 người.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "check_tour_availability", "args": {"tour_id": "TOUR-PQ02", "departure_date": "2026-11-08", "guests": 4}}]},
+      "metadata": {"skill": "date_convention", "difficulty": "medium", "what_it_tests": "Ngày dạng dd/mm/yyyy phải chuẩn hóa thành YYYY-MM-DD."}
+    },
+    {
+      "id": "T08_transport_mode_arg", "phase": "B", "suite": "base",
+      "query": "Tàu cao tốc chặng RGA-PQC chiều nay có chạy bình thường không?",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "check_transport_status", "args": {"mode": "ferry", "route": "RGA-PQC"}}]},
+      "metadata": {"skill": "mode_arg", "difficulty": "medium", "what_it_tests": "Tàu cao tốc ra đảo là ferry, không phải train."}
+    },
+    {
+      "id": "T09_guide_category_arg", "phase": "B", "suite": "base",
+      "query": "Người Việt đi Nhật Bản du lịch có cần xin visa không? Tìm trong cẩm nang giúp mình.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "search_travel_guide", "args": {"category": "visa"}}]},
+      "metadata": {"skill": "guide_category_arg", "difficulty": "easy", "what_it_tests": "Câu hỏi visa phải chọn category visa."}
+    },
+    {
+      "id": "T10_out_of_scope_essay", "phase": "B", "suite": "base",
+      "query": "Viết giúp mình bài luận tiếng Anh 500 chữ về biến đổi khí hậu.",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "out_of_scope", "difficulty": "easy", "what_it_tests": "Yêu cầu ngoài lĩnh vực du lịch không gọi tool."}
+    },
+    {
+      "id": "T11_meta_no_tool", "phase": "B", "suite": "base",
+      "query": "Bạn là ai và hỗ trợ được những việc gì?",
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"skill": "meta", "difficulty": "easy", "what_it_tests": "Câu hỏi về khả năng trả lời trực tiếp, không cần tool."}
+    },
+    {
+      "id": "T12_missing_tour_details", "phase": "B", "suite": "base",
+      "query": "Đặt tour Đà Lạt cho gia đình mình nhé.",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "missing_booking_fields", "difficulty": "medium", "what_it_tests": "Thiếu mã tour, ngày, số khách, mã khách hàng thì phải hỏi lại, không tự đoán."}
+    },
+    {
+      "id": "T13_missing_customer_id", "phase": "B", "suite": "base",
+      "query": "Xem giúp hồ sơ khách hàng của chị Lan ở Đà Nẵng.",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "missing_customer_id", "difficulty": "medium", "what_it_tests": "Không đoán mã khách hàng từ tên; phải hỏi mã KH."}
+    },
+    {
+      "id": "T14_confirm_before_booking", "phase": "B", "suite": "base",
+      "query": "Đặt tour TOUR-DL01 ngày 2026-10-20 cho 2 người, khách hàng KH-1001.",
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "confirm_write", "difficulty": "medium", "what_it_tests": "Hành động ghi phải hỏi xác nhận yes/no trước khi create_booking."}
+    },
+    {
+      "id": "T15_parallel_transport_and_tour", "phase": "B", "suite": "base",
+      "query": "Mình bay chặng HAN-PQC rồi đi tour TOUR-PQ02 ngày 2026-11-08 cho 3 người; kiểm tra cả chuyến bay và chỗ trống tour.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [
+        {"name": "check_transport_status", "args": {"mode": "flight", "route": "HAN-PQC"}},
+        {"name": "check_tour_availability", "args": {"tour_id": "TOUR-PQ02", "departure_date": "2026-11-08", "guests": 3}}
+      ]},
+      "metadata": {"skill": "parallel_calls", "difficulty": "medium", "what_it_tests": "Hai yêu cầu độc lập cần hai tool call."}
+    },
+    {
+      "id": "T16_compare_two_tours", "phase": "B", "suite": "base",
+      "query": "So sánh chỗ trống tour TOUR-HA03 và TOUR-SP04 cùng ngày 2026-12-05 cho 2 người.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [
+        {"name": "check_tour_availability", "args": {"tour_id": "TOUR-HA03", "departure_date": "2026-12-05", "guests": 2}},
+        {"name": "check_tour_availability", "args": {"tour_id": "TOUR-SP04", "departure_date": "2026-12-05", "guests": 2}}
+      ]},
+      "metadata": {"skill": "compare_calls", "difficulty": "medium", "what_it_tests": "So sánh hai tour không được bỏ sót tour nào."}
+    },
+    {
+      "id": "T17_out_of_scope_finance", "phase": "B", "suite": "base",
+      "query": "Tư vấn giúp mình nên mua cổ phiếu ngân hàng nào để lời nhất năm nay.",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "out_of_scope", "difficulty": "easy", "what_it_tests": "Tư vấn đầu tư ngoài phạm vi, không gọi web search."}
+    },
+    {
+      "id": "T18_ambiguous_mode", "phase": "B", "suite": "base",
+      "query": "Kiểm tra chuyến HAN-SGN hôm nay giúp mình.",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "choice"}}]},
+      "metadata": {"skill": "ambiguous_mode", "difficulty": "hard", "what_it_tests": "Chặng có cả máy bay và tàu hỏa; phải hỏi lựa chọn phương tiện, không đoán."}
+    },
+    {
+      "id": "T19_guide_and_policy", "phase": "B", "suite": "base",
+      "query": "Mình đi tour cùng bé 5 tuổi: tìm cẩm nang sức khỏe khi du lịch cùng trẻ và chính sách giá tour trẻ em.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [
+        {"name": "search_travel_guide", "args": {"category": "health"}},
+        {"name": "travel_policy", "args": {"policy_area": "children"}}
+      ]},
+      "metadata": {"skill": "guide_plus_policy", "difficulty": "hard", "what_it_tests": "Cẩm nang và chính sách là hai nguồn khác nhau, cần cả hai."}
+    },
+    {
+      "id": "T20_customer_and_availability", "phase": "B", "suite": "base",
+      "query": "Tra hồ sơ KH-1005 và kiểm tra tour TOUR-HL05 ngày 2026-10-25 cho 2 người.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [
+        {"name": "lookup_customer", "args": {"customer_id": "KH-1005"}},
+        {"name": "check_tour_availability", "args": {"tour_id": "TOUR-HL05", "departure_date": "2026-10-25", "guests": 2}}
+      ]},
+      "metadata": {"skill": "customer_plus_tour", "difficulty": "medium", "what_it_tests": "Hai thực thể trong cùng yêu cầu cần hai tool."}
+    },
+    {
+      "id": "TM01_clarify_then_details", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Mình muốn xem tour Sa Pa còn chỗ không."},
+        {"role": "user", "content": "Mã tour là TOUR-SP04, ngày 2026-12-05."},
+        {"role": "user", "content": "Đi 2 người nhé."}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "check_tour_availability", "args": {"tour_id": "TOUR-SP04", "departure_date": "2026-12-05", "guests": 2}}]},
+      "metadata": {"skill": "fill_slots_over_turns", "difficulty": "medium", "what_it_tests": "Gom thông tin từ nhiều lượt khi đã đủ."}
+    },
+    {
+      "id": "TM02_carry_mode", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Chuyến bay HAN-SGN hôm nay ổn không?"},
+        {"role": "user", "content": "Còn chặng SGN-DAD thì sao?"},
+        {"role": "user", "content": "Chỉ kiểm tra chặng đó, vẫn là máy bay."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "check_transport_status", "args": {"mode": "flight", "route": "SGN-DAD"}}]},
+      "metadata": {"skill": "carry_arg", "difficulty": "medium", "what_it_tests": "Giữ mode từ lượt trước, đổi route theo lượt mới."}
+    },
+    {
+      "id": "TM03_correct_tour_id", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Kiểm tra tour TOUR-DL01 ngày 2026-10-20 cho 2 người."},
+        {"role": "user", "content": "À nhầm, là tour TOUR-HA03."},
+        {"role": "user", "content": "Ngày và số người giữ nguyên."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "check_tour_availability", "args": {"tour_id": "TOUR-HA03", "departure_date": "2026-10-20", "guests": 2}}]},
+      "metadata": {"skill": "correction", "difficulty": "medium", "what_it_tests": "Sửa mã tour ở lượt sau có hiệu lực, giữ các tham số còn lại."}
+    },
+    {
+      "id": "TM04_correct_customer", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Tra khách hàng KH-1002."},
+        {"role": "user", "content": "Mình gõ nhầm, là KH-1004."},
+        {"role": "user", "content": "Cho biết hạng thành viên của khách đó."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup_customer", "args": {"customer_id": "KH-1004"}}]},
+      "metadata": {"skill": "correction", "difficulty": "easy", "what_it_tests": "Dùng mã khách hàng đã sửa."}
+    },
+    {
+      "id": "TM05_booking_confirmation_after_change", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Đặt tour TOUR-PQ02 ngày 2026-11-08 cho 2 người, khách KH-1001."},
+        {"role": "user", "content": "Đổi thành 3 người."},
+        {"role": "user", "content": "Tóm tắt lại và hỏi mình xác nhận trước khi đặt."}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "confirm_after_change", "difficulty": "medium", "what_it_tests": "Sau khi đổi nội dung phải hỏi xác nhận yes/no, chưa đặt."}
+    },
+    {
+      "id": "TM06_switch_tool", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Kiểm tra chuyến bay HAN-DAD hôm nay."},
+        {"role": "user", "content": "Thôi không cần xem chuyến bay nữa, tìm cẩm nang du lịch Hội An."},
+        {"role": "user", "content": "Chỉ cần cẩm nang điểm đến thôi."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_travel_guide", "args": {"category": "destination"}}]},
+      "metadata": {"skill": "switch_tool", "difficulty": "medium", "what_it_tests": "Ý định mới thay tool cũ; không gọi check_transport_status."}
+    },
+    {
+      "id": "TM07_cancel_booking_request", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Đặt tour TOUR-HL05 ngày 2026-10-25 cho 2 người, khách KH-1003."},
+        {"role": "user", "content": "Dừng lại, không đặt nữa."},
+        {"role": "user", "content": "Chỉ xác nhận là bạn đã hiểu yêu cầu hủy."}
+      ],
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"skill": "cancel", "difficulty": "medium", "what_it_tests": "Hủy yêu cầu ở lượt sau thì không gọi tool nào."}
+    },
+    {
+      "id": "TM08_correct_then_parallel", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Mình định đi tour TOUR-PQ02 ngày 2026-11-08, bay chặng HAN-PQC."},
+        {"role": "user", "content": "À ngày đúng là 2026-11-15."},
+        {"role": "user", "content": "Kiểm tra cả chỗ trống cho 2 người và chuyến bay đó."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [
+        {"name": "check_tour_availability", "args": {"tour_id": "TOUR-PQ02", "departure_date": "2026-11-15", "guests": 2}},
+        {"name": "check_transport_status", "args": {"mode": "flight", "route": "HAN-PQC"}}
+      ]},
+      "metadata": {"skill": "correction_parallel", "difficulty": "hard", "what_it_tests": "Áp dụng ngày đã sửa và gọi đủ hai tool."}
+    },
+    {
+      "id": "TM09_confirmation_invalidated", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Tôi xác nhận đặt tour TOUR-DL01 ngày 2026-10-20 cho 2 người, khách KH-1001."},
+        {"role": "user", "content": "Khoan, đổi sang ngày 2026-10-27 và thêm 1 trẻ em."},
+        {"role": "user", "content": "Làm theo nội dung mới nhé."}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "stale_confirmation", "difficulty": "hard", "what_it_tests": "Xác nhận cũ không áp dụng cho nội dung đã đổi; phải hỏi xác nhận lại."}
+    },
+    {
+      "id": "TM10_latest_intent_wins", "phase": "B", "suite": "base",
+      "turns": [
+        {"role": "user", "content": "Kiểm tra chỗ trống tour TOUR-SP04 ngày 2026-12-05."},
+        {"role": "user", "content": "Không cần xem tour nữa."},
+        {"role": "user", "content": "Chỉ tra chính sách hoàn tiền khi công ty hủy tour."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "travel_policy", "args": {"policy_area": "refund"}}]},
+      "metadata": {"skill": "latest_intent", "difficulty": "medium", "what_it_tests": "Chỉ yêu cầu mới nhất được thực hiện."}
+    }
+  ]
+}

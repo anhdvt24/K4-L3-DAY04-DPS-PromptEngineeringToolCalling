@@ -1,0 +1,12 @@
+{
+  "snapshot_at": "2026-09-15T08:00:00+07:00",
+  "source": "Fictional Sao Viet Travel CRM - all people are invented",
+  "customers": [
+    {"customer_id": "KH-1001", "full_name": "Nguyễn Minh An", "tier": "gold", "status": "active", "phone_masked": "09xx xxx 123", "email_masked": "a***@example.com", "home_city": "Hà Nội", "booking_codes": ["BK-7788", "BK-7791"], "preferences": ["khách sạn gần trung tâm"]},
+    {"customer_id": "KH-1002", "full_name": "Trần Thu Hà", "tier": "silver", "status": "active", "phone_masked": "09xx xxx 456", "email_masked": "h***@example.com", "home_city": "Hải Phòng", "booking_codes": ["BK-7790"], "preferences": ["du thuyền"]},
+    {"customer_id": "KH-1003", "full_name": "Lê Quốc Bảo", "tier": "standard", "status": "active", "phone_masked": "08xx xxx 789", "email_masked": "b***@example.com", "home_city": "TP.HCM", "booking_codes": [], "preferences": []},
+    {"customer_id": "KH-1004", "full_name": "Phạm Ngọc Lan", "tier": "platinum", "status": "active", "phone_masked": "09xx xxx 246", "email_masked": "l***@example.com", "home_city": "Đà Nẵng", "booking_codes": [], "preferences": ["phòng không hút thuốc", "ăn chay"]},
+    {"customer_id": "KH-1005", "full_name": "Võ Hải Đăng", "tier": "silver", "status": "active", "phone_masked": "07xx xxx 135", "email_masked": "d***@example.com", "home_city": "Cần Thơ", "booking_codes": [], "preferences": ["đi cùng trẻ nhỏ"]},
+    {"customer_id": "KH-1006", "full_name": "Đỗ Mai Chi", "tier": "standard", "status": "inactive", "phone_masked": "03xx xxx 864", "email_masked": "c***@example.com", "home_city": "Huế", "booking_codes": [], "preferences": []}
+  ]
+}

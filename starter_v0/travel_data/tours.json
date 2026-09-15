@@ -1,0 +1,48 @@
+{
+  "snapshot_at": "2026-09-15T08:00:00+07:00",
+  "source": "Fictional Sao Viet Travel tour inventory",
+  "tours": [
+    {
+      "tour_id": "TOUR-DL01", "name": "Đà Lạt ngàn hoa 3N2Đ", "destination": "Đà Lạt", "duration": "3 ngày 2 đêm",
+      "departure_city": "TP.HCM", "price_adult_vnd": 3490000, "includes": ["xe du lịch", "khách sạn 3 sao", "hướng dẫn viên"],
+      "departures": [
+        {"date": "2026-10-20", "seats_total": 25, "seats_left": 8, "status": "open"},
+        {"date": "2026-10-27", "seats_total": 25, "seats_left": 2, "status": "open"},
+        {"date": "2026-11-03", "seats_total": 25, "seats_left": 0, "status": "sold_out"}
+      ]
+    },
+    {
+      "tour_id": "TOUR-PQ02", "name": "Phú Quốc biển xanh 4N3Đ", "destination": "Phú Quốc", "duration": "4 ngày 3 đêm",
+      "departure_city": "Hà Nội", "price_adult_vnd": 6890000, "includes": ["vé máy bay khứ hồi", "resort 4 sao", "tour cano 4 đảo"],
+      "departures": [
+        {"date": "2026-11-08", "seats_total": 20, "seats_left": 5, "status": "open"},
+        {"date": "2026-11-15", "seats_total": 20, "seats_left": 12, "status": "open"},
+        {"date": "2026-11-22", "seats_total": 20, "seats_left": 0, "status": "sold_out"}
+      ]
+    },
+    {
+      "tour_id": "TOUR-HA03", "name": "Hội An phố cổ 3N2Đ", "destination": "Hội An", "duration": "3 ngày 2 đêm",
+      "departure_city": "Đà Nẵng", "price_adult_vnd": 2990000, "includes": ["khách sạn 3 sao", "vé tham quan phố cổ", "thuyền sông Hoài"],
+      "departures": [
+        {"date": "2026-10-20", "seats_total": 18, "seats_left": 6, "status": "open"},
+        {"date": "2026-12-05", "seats_total": 18, "seats_left": 1, "status": "open"}
+      ]
+    },
+    {
+      "tour_id": "TOUR-SP04", "name": "Sa Pa mùa lúa 2N1Đ", "destination": "Sa Pa", "duration": "2 ngày 1 đêm",
+      "departure_city": "Hà Nội", "price_adult_vnd": 1990000, "includes": ["xe giường nằm", "homestay", "trekking bản Cát Cát"],
+      "departures": [
+        {"date": "2026-12-05", "seats_total": 30, "seats_left": 10, "status": "open"},
+        {"date": "2026-12-12", "seats_total": 30, "seats_left": 4, "status": "open"}
+      ]
+    },
+    {
+      "tour_id": "TOUR-HL05", "name": "Vịnh Hạ Long du thuyền 2N1Đ", "destination": "Hạ Long", "duration": "2 ngày 1 đêm",
+      "departure_city": "Hà Nội", "price_adult_vnd": 3290000, "includes": ["du thuyền 4 sao", "chèo kayak", "bữa tối trên vịnh"],
+      "departures": [
+        {"date": "2026-10-25", "seats_total": 16, "seats_left": 3, "status": "open"},
+        {"date": "2026-11-01", "seats_total": 16, "seats_left": 16, "status": "cancelled_weather"}
+      ]
+    }
+  ]
+}

@@ -15,6 +15,13 @@ from .policy.tool import search_company_policy
 from .search_kb.tool import search_kb
 from .search_device_info.tool import search_device_info
 from .search_travel_info.tool import search_travel_info
+from .search_travel_guide.tool import search_travel_guide
+from .check_tour_availability.tool import check_tour_availability
+from .check_transport_status.tool import check_transport_status
+from .lookup_customer.tool import lookup_customer
+from .travel_policy.tool import travel_policy
+from .create_booking.tool import create_booking
+from .check_booking_status.tool import check_booking_status
 
 
 # These names are part of the fixed evaluation contract. Keep built-in names
@@ -32,6 +39,14 @@ TOOL_FUNCTIONS = {
     "format_incident_report": format_incident_report,
     "policy": search_company_policy,
     "create_ticket": create_ticket,
+    # Travel assistant tools (team domain). IT tools above stay for the reference suite.
+    "search_travel_guide": search_travel_guide,
+    "check_tour_availability": check_tour_availability,
+    "check_transport_status": check_transport_status,
+    "lookup_customer": lookup_customer,
+    "travel_policy": travel_policy,
+    "create_booking": create_booking,
+    "check_booking_status": check_booking_status,
 }
 
 

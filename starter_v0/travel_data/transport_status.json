@@ -1,0 +1,17 @@
+{
+  "snapshot_at": "2026-09-15T08:00:00+07:00",
+  "source": "Fictional transport status feed",
+  "routes": [
+    {"mode": "flight", "route": "HAN-SGN", "operator": "Lab Air", "service_no": "LA201", "scheduled": "09:00", "status": "on_time", "delay_minutes": 0},
+    {"mode": "flight", "route": "HAN-PQC", "operator": "Lab Air", "service_no": "LA455", "scheduled": "10:30", "status": "delayed", "delay_minutes": 90, "note": "Chậm do tàu bay về muộn"},
+    {"mode": "flight", "route": "SGN-DAD", "operator": "Lab Air", "service_no": "LA122", "scheduled": "11:15", "status": "on_time", "delay_minutes": 0},
+    {"mode": "flight", "route": "HAN-DAD", "operator": "Lab Air", "service_no": "LA315", "scheduled": "13:00", "status": "cancelled", "delay_minutes": null, "note": "Hủy do điều chỉnh khai thác; khách được chuyển sang LA317 lúc 15:00"},
+    {"mode": "flight", "route": "SGN-PQC", "operator": "Lab Air", "service_no": "LA531", "scheduled": "16:45", "status": "on_time", "delay_minutes": 0},
+    {"mode": "train", "route": "HAN-SGN", "operator": "Lab Rail", "service_no": "SE1", "scheduled": "19:25", "status": "on_time", "delay_minutes": 0},
+    {"mode": "train", "route": "HAN-LCI", "operator": "Lab Rail", "service_no": "SP1", "scheduled": "21:40", "status": "delayed", "delay_minutes": 30, "note": "Chậm do bảo trì đường ray đoạn Yên Bái"},
+    {"mode": "bus", "route": "HAN-SPA", "operator": "Lab Bus", "service_no": "LB08", "scheduled": "07:00", "status": "on_time", "delay_minutes": 0},
+    {"mode": "bus", "route": "DAD-HOI", "operator": "Lab Bus", "service_no": "LB21", "scheduled": "08:30", "status": "on_time", "delay_minutes": 0},
+    {"mode": "ferry", "route": "RGA-PQC", "operator": "Lab Ferry", "service_no": "LF02", "scheduled": "13:00", "status": "suspended", "delay_minutes": null, "note": "Tạm ngừng do sóng lớn cấp 6"},
+    {"mode": "ferry", "route": "HPH-CBA", "operator": "Lab Ferry", "service_no": "LF10", "scheduled": "09:00", "status": "on_time", "delay_minutes": 0}
+  ]
+}
