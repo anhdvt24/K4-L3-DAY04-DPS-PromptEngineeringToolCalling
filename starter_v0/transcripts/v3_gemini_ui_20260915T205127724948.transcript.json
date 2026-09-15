@@ -1,0 +1,73 @@
+{
+  "transcript_id": "v3_gemini_ui_20260915T205127724948",
+  "version": "v3",
+  "artifact_version": "v3+p91a13e3ac159+t23d06775e1e7",
+  "prompt_hash": "91a13e3ac159e73366dcb68bef04655b793f885ecdc77f73dfc2996db2f739a4",
+  "tools_hash": "23d06775e1e7ecc82d6fdd8f42c980ed5bb6540be0cddaa7d3253b8d7c1218b1",
+  "provider": "gemini",
+  "model": "gemini-3.5-flash-lite",
+  "interface": "streamlit_ui",
+  "system_prompt": "D:\\VScode\\K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "D:\\VScode\\K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling\\starter_v0\\artifacts\\tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-09-15T20:51:27",
+  "updated_at": "2026-09-15T20:51:58",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-09-15T20:51:56",
+      "user": "tôi muốn đặt tour",
+      "status": "waiting_for_user",
+      "assistant_text": "Quý khách vui lòng cung cấp mã tour, ngày khởi hành, tổng số khách và mã khách hàng để tiến hành đặt tour nhé!",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [
+            {
+              "name": "clarify",
+              "args": {
+                "response_type": "text",
+                "question": "Quý khách vui lòng cung cấp mã tour, ngày khởi hành, tổng số khách và mã khách hàng để tiến hành đặt tour nhé!"
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "clarify",
+              "args": {
+                "response_type": "text",
+                "question": "Quý khách vui lòng cung cấp mã tour, ngày khởi hành, tổng số khách và mã khách hàng để tiến hành đặt tour nhé!"
+              },
+              "result": {
+                "tool": "clarify",
+                "question": "Quý khách vui lòng cung cấp mã tour, ngày khởi hành, tổng số khách và mã khách hàng để tiến hành đặt tour nhé!",
+                "response_type": "text",
+                "options": [],
+                "awaiting_user": true
+              }
+            }
+          ]
+        }
+      ],
+      "tool_events": [
+        {
+          "tool": "clarify",
+          "args": {
+            "response_type": "text",
+            "question": "Quý khách vui lòng cung cấp mã tour, ngày khởi hành, tổng số khách và mã khách hàng để tiến hành đặt tour nhé!"
+          },
+          "result": {
+            "tool": "clarify",
+            "question": "Quý khách vui lòng cung cấp mã tour, ngày khởi hành, tổng số khách và mã khách hàng để tiến hành đặt tour nhé!",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ],
+      "ended_at": "2026-09-15T20:51:58"
+    }
+  ]
+}
