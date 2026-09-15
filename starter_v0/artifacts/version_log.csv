@@ -1,1 +1,2 @@
 version,author,changed_artifact,artifact_version,prompt_hash,tools_hash,reason,hypothesis,metric_name,metric_before,metric_after,run_file
+v0,NLNBao237,baseline,v0+pb091a17e2eff+tda98fc080d07,b091a17e2eff,da98fc080d07,Baseline travel prompt/tools (brief draft) before any fix,Đo hành vi chưa tối ưu trước khi sửa; adversarial v0 = 0.5833 (runs/v0_B_adversarial_gemini_20260915T201914462898.json),case_accuracy,,0.8,runs/v0_B_base_gemini_20260915T201829636279.json
