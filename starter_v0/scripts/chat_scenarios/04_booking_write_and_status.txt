@@ -1,0 +1,4 @@
+Đặt tour TOUR-HA03 ngày 2026-10-20 cho 2 người, khách KH-1005.
+Có, xác nhận đặt.
+Kiểm tra tình trạng booking vừa tạo của khách KH-1005.
+/exit

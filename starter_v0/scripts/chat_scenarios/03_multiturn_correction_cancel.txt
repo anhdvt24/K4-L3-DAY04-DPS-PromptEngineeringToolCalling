@@ -1,0 +1,5 @@
+Kiểm tra tour TOUR-DL01 ngày 2026-10-20 cho 2 người.
+À nhầm, ngày 2026-10-27 và nhà mình thêm 1 người nữa.
+Đặt luôn cho khách KH-1001 nhé.
+Thôi, không đặt nữa.
+/exit
