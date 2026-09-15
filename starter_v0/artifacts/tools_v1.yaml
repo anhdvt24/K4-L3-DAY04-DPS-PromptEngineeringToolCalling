@@ -1,0 +1,114 @@
+# v1 — Tourism Helpdesk tools (VietTravel)
+# Evolution from v0: enhanced `create_support_ticket` and `clarify` descriptions to
+# enforce the Confirmation Rule and clarify-on-missing-info behavior. Tool names
+# and schemas are unchanged.
+tools:
+  # ---------------- Universal helpers ----------------
+  - name: clarify
+    description: >
+      Ask the user a clarification question. Use this tool whenever a required
+      argument is missing, malformed, or ambiguous. Also use it (with
+      response_type=yes_no) as the mandatory confirmation step before calling
+      any write action such as create_support_ticket.
+    parameters:
+      type: object
+      properties:
+        question: {type: string, default: "", description: "Question to ask the user"}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Expected answer type"}
+        options: {type: array, default: [], items: {type: string}, description: "Multiple-choice options"}
+      required: [question]
+
+  - name: format_incident_report
+    description: "Format already-collected findings into a report."
+    parameters:
+      type: object
+      properties:
+        findings:
+          type: array
+          default: []
+          description: "Findings already collected"
+          items:
+            type: object
+            properties:
+              label: {type: string}
+              detail: {type: string}
+              source: {type: string}
+              status: {type: string}
+        template: {type: string, enum: [brief, technical, handoff], default: "brief", description: "Report template"}
+        incident_title: {type: string, default: "Tourism incident", description: "Title"}
+      required: [findings, template]
+
+  # ---------------- Tourism domain tools ----------------
+  - name: search_travel_kb
+    description: "Search the VietTravel knowledge base."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Search text"}
+        category: {type: string, enum: [all, visa, refund, payment, booking, insurance], default: "all", description: "Category"}
+        top_k: {type: integer, default: 3, description: "Number of results"}
+      required: [query]
+
+  - name: check_booking_status
+    description: "Check the status of a booking."
+    parameters:
+      type: object
+      properties:
+        booking_id: {type: string, description: "Booking identifier in canonical format BK-XXXX (4-6 digits), e.g. BK-1001"}
+      required: [booking_id]
+
+  - name: lookup_customer
+    description: "Look up a customer in the support directory."
+    parameters:
+      type: object
+      properties:
+        customer_id: {type: string, description: "Customer identifier in canonical format CUST-XXXX (3-4 digits, zero-padded), e.g. CUST-042"}
+      required: [customer_id]
+
+  - name: lookup_hotel
+    description: "Look up a hotel or resort."
+    parameters:
+      type: object
+      properties:
+        hotel_id: {type: string, description: "Hotel identifier in canonical format HTL-XXX (alphanumeric), e.g. HTL-NT5"}
+      required: [hotel_id]
+
+  - name: travel_policy
+    description: "Search VietTravel internal policy."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Search text"}
+        policy_area: {type: string, enum: [all, ticketing, data_privacy, service_operations], default: "all", description: "Policy area"}
+        top_k: {type: integer, default: 3, description: "Number of items"}
+      required: [query]
+
+  - name: create_support_ticket
+    description: >
+      Create a customer support ticket. WRITE ACTION — calling this tool
+      without explicit user confirmation is a contract violation.
+
+      Required protocol before calling this tool:
+        1. Compose the payload internally (summary, priority, booking_id).
+        2. Call `clarify(response_type="yes_no", question=<one-sentence summary
+           of the exact payload>)` to obtain confirmation.
+        3. Wait for the user's explicit confirmation in a subsequent turn.
+        4. ONLY THEN call this tool with `confirmed=true`.
+
+      If the user has not yet provided all required fields, call `clarify` with
+      response_type="text" to gather them first. User phrases like "tôi xác
+      nhận", "xác nhận", "ok tạo đi" in the same turn as the ticket request do
+      NOT count as confirmation. A confirmation turn that re-states the final
+      payload is required.
+
+      This tool returns `needs_confirmation` if called with `confirmed=false`,
+      but that is a reactive safeguard — the agent must still proactively call
+      `clarify` first.
+    parameters:
+      type: object
+      properties:
+        summary: {type: string, default: "", description: "Issue summary"}
+        priority: {type: string, enum: [low, medium, high, critical], default: "medium", description: "Priority level"}
+        booking_id: {type: string, default: "", description: "Related booking id if any, canonical format BK-XXXX"}
+        confirmed: {type: boolean, default: false, description: "User has explicitly confirmed in a separate turn. Must be true to actually create the ticket."}
+      required: [summary]

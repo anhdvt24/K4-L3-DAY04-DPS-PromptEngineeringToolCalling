@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VietTravel Agent — V1 Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Variables ──────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    #2e3350;
+      --accent:    #6366f1;
+      --accent2:   #818cf8;
+      --green:     #22c55e;
+      --amber:     #f59e0b;
+      --red:       #ef4444;
+      --text:      #e2e8f0;
+      --text2:     #94a3b8;
+      --text3:     #64748b;
+      --radius:    10px;
+      --shadow:    0 4px 24px rgba(0,0,0,.35);
+      --font:      'Inter', system-ui, sans-serif;
+      --mono:      'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    header .logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: #fff;
+    }
+    header .title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+    }
+    header .subtitle {
+      font-size: 12px; color: var(--text2); margin-top: 1px;
+    }
+    header .spacer { flex: 1; }
+    header .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 99px;
+    }
+    header .version-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent2);
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 99px;
+    }
+
+    /* ── Config bar ─────────────────────────────────────────────────── */
+    .config-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 20px;
+      display: flex; align-items: center; gap: 12px;
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+    .config-bar label { color: var(--text2); }
+    .config-bar select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px; border-radius: 6px;
+      font-size: 12px; cursor: pointer;
+      font-family: var(--font);
+    }
+    .config-bar select:focus { outline: none; border-color: var(--accent); }
+    .config-bar .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text3);
+    }
+    .dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot.error { background: var(--red); }
+    .config-bar .session-id {
+      color: var(--text3); font-family: var(--mono); font-size: 11px;
+    }
+
+    /* ── Main layout ────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── Chat area ─────────────────────────────────────────────────── */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 5px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Message bubbles ────────────────────────────────────────────── */
+    .msg {
+      max-width: 80%;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .msg.user {
+      align-self: flex-end;
+    }
+    .msg.assistant {
+      align-self: flex-start;
+    }
+
+    .msg .bubble {
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 14px; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .msg.user .bubble {
+      background: var(--accent);
+      color: #fff;
+      border-bottom-right-radius: 2px;
+    }
+    .msg.assistant .bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 2px;
+    }
+
+    /* ── Tool call block ─────────────────────────────────────────────── */
+    .tool-call {
+      align-self: flex-start;
+      max-width: 85%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+    .tool-call .tool-header {
+      background: rgba(99,102,241,.1);
+      padding: 6px 12px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tool-call .tool-icon {
+      font-size: 14px;
+    }
+    .tool-call .tool-name {
+      font-family: var(--mono);
+      font-weight: 600;
+      color: var(--accent2);
+    }
+    .tool-call .tool-status {
+      margin-left: auto;
+      font-size: 10px; font-weight: 600;
+      padding: 2px 7px; border-radius: 99px;
+    }
+    .tool-call .tool-status.running { background: var(--amber); color: #000; }
+    .tool-call .tool-status.done { background: var(--green); color: #000; }
+    .tool-call .tool-body { padding: 8px 12px; }
+    .tool-call .tool-args {
+      font-family: var(--mono);
+      color: var(--text2);
+      background: rgba(0,0,0,.25);
+      padding: 6px 8px;
+      border-radius: 6px;
+      overflow-x: auto;
+      white-space: pre;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .tool-call .tool-result {
+      margin-top: 8px;
+      color: var(--text);
+      overflow-x: auto;
+      white-space: pre;
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .tool-call .tool-result.error {
+      color: var(--red);
+    }
+    .tool-call .tool-result .awaiting {
+      color: var(--amber);
+      font-style: italic;
+    }
+
+    /* ── Status badges ──────────────────────────────────────────────── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 500;
+      padding: 3px 8px; border-radius: 99px;
+    }
+    .status-badge.waiting_for_user { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+    .status-badge.answered { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+    .status-badge.max_tool_rounds { background: rgba(99,102,241,.15); color: var(--accent2); border: 1px solid rgba(99,102,241,.3); }
+    .status-badge.provider_error { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+
+    /* ── Input area ────────────────────────────────────────────────── */
+    .input-area {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex; align-items: flex-end; gap: 10px;
+      flex-shrink: 0;
+    }
+    .input-area textarea {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px; font-family: var(--font);
+      resize: none;
+      min-height: 44px; max-height: 140px;
+      overflow-y: auto;
+      transition: border-color .2s;
+      line-height: 1.5;
+    }
+    .input-area textarea:focus { outline: none; border-color: var(--accent); }
+    .input-area textarea::placeholder { color: var(--text3); }
+    .send-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      width: 44px; height: 44px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: var(--accent2); }
+    .send-btn:active { transform: scale(.95); }
+    .send-btn:disabled { background: var(--text3); cursor: not-allowed; transform: none; }
+
+    /* ── Right sidebar ─────────────────────────────────────────────── */
+    .sidebar {
+      width: 300px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .sidebar-title {
+      padding: 12px 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text3);
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-content {
+      flex: 1; overflow-y: auto;
+      padding: 12px;
+    }
+    .sidebar-content::-webkit-scrollbar { width: 4px; }
+    .sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .session-list { display: flex; flex-direction: column; gap: 6px; }
+    .session-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .session-item:hover { border-color: var(--accent); }
+    .session-item.active { border-color: var(--accent); background: rgba(99,102,241,.1); }
+    .session-item .s-id { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+    .session-item .s-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .session-item .s-turns { font-size: 10px; color: var(--text3); }
+
+    .empty-sidebar { text-align: center; padding: 24px 12px; color: var(--text3); font-size: 13px; }
+
+    .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+    /* ── Turn trace panel ───────────────────────────────────────────── */
+    .trace-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text3);
+      margin-bottom: 8px;
+    }
+    .trace-round {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .trace-round-header {
+      background: rgba(99,102,241,.07);
+      padding: 6px 10px;
+      font-size: 11px; font-weight: 600; color: var(--accent2);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .trace-round-body { padding: 6px 10px; }
+    .trace-item {
+      font-family: var(--mono); font-size: 10px;
+      color: var(--text2);
+      padding: 2px 0;
+      display: flex; gap: 6px;
+    }
+    .trace-item .label { color: var(--text3); min-width: 50px; }
+    .trace-item .value { color: var(--text); word-break: break-all; }
+
+    /* ── Tooltip ────────────────────────────────────────────────────── */
+    .tooltip {
+      position: relative;
+    }
+    .tooltip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: 120%; left: 50%; transform: translateX(-50%);
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text2); font-size: 11px;
+      padding: 4px 8px; border-radius: 6px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .2s;
+      z-index: 100;
+    }
+    .tooltip:hover::after { opacity: 1; }
+
+    /* ── Loading indicator ──────────────────────────────────────────── */
+    .typing {
+      display: flex; gap: 4px; align-items: center;
+      padding: 10px 14px;
+    }
+    .typing span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text3);
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+
+    /* ── Warning banner (when no API key) ────────────────────────────── */
+    .warning-banner {
+      background: linear-gradient(90deg, rgba(245,158,11,.15), rgba(245,158,11,.08));
+      border-bottom: 1px solid rgba(245,158,11,.4);
+      padding: 10px 20px;
+      font-size: 13px;
+      color: var(--amber);
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+    }
+    .warning-banner.hidden { display: none; }
+    .warning-banner .icon { font-size: 18px; }
+    .warning-banner .text { flex: 1; }
+    .warning-banner .text strong { color: var(--text); }
+    .warning-banner button {
+      background: var(--amber);
+      color: #000;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .warning-banner button:hover { background: #fbbf24; }
+    .warning-banner button.secondary {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .warning-banner code {
+      background: rgba(0,0,0,.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    /* ── Error message ────────────────────────────────────────────────── */
+    .error-card {
+      align-self: flex-start;
+      max-width: 90%;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.4);
+      border-left: 3px solid var(--red);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .error-card .err-title {
+      color: var(--red);
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .error-card .err-detail {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text2);
+      background: rgba(0,0,0,.3);
+      padding: 6px 8px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-top: 4px;
+    }
+
+    /* ── Demo mode indicator ──────────────────────────────────────────── */
+    .demo-pill {
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      color: #000;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 99px;
+      margin-left: 8px;
+      letter-spacing: .04em;
+    }
+    .demo-pill.hidden { display: none; }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .msg { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">🧭</div>
+  <div>
+    <div class="title">VietTravel Agent <span class="demo-pill hidden" id="demo-pill">DEMO</span></div>
+    <div class="subtitle">Tourism Helpdesk AI — V1 Chat Interface</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="version-badge" id="header-version">v1</div>
+  <div class="badge" id="header-status">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-text">Loading</span>
+  </div>
+</header>
+
+<!-- ── Warning banner (no API key) ────────────────────────────────────── -->
+<div class="warning-banner hidden" id="warning-banner">
+  <span class="icon">⚠️</span>
+  <div class="text">
+    <strong>Chưa có API key.</strong> Server sẽ không gọi được Gemini.
+    Set key trước khi khởi động server: <code>$env:GEMINI_API_KEY = "AIza..."</code>
+    <br/>Hoặc bật <strong>Demo Mode</strong> để test giao diện với mock responses.
+  </div>
+  <button id="enable-demo-btn">Bật Demo Mode</button>
+  <button class="secondary" id="dismiss-banner-btn">Ẩn</button>
+</div>
+
+<!-- ── Config bar ───────────────────────────────────────────────────────── -->
+<div class="config-bar">
+  <label for="provider-select">Provider:</label>
+  <select id="provider-select">
+    <option value="demo">🎭 Demo (Mock)</option>
+    <option value="gemini">Gemini</option>
+    <option value="openai">OpenAI</option>
+    <option value="openrouter">OpenRouter</option>
+    <option value="anthropic">Anthropic</option>
+  </select>
+
+  <label for="version-select">Version:</label>
+  <select id="version-select">
+    <option value="v3" selected>v3 — Hardened (Invalid-ID + Show-Payload + Adversarial)</option>
+    <option value="v2">v2 — English Query + Write Priority</option>
+    <option value="v1">v1 — Confirmation Rule</option>
+    <option value="v0">v0 — Baseline</option>
+  </select>
+
+  <div class="dot" id="api-dot" title="API key status"></div>
+  <span id="session-id" class="session-id">No session</span>
+</div>
+
+<!-- ── Main ────────────────────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- Chat area -->
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="msg assistant" id="welcome-msg">
+        <div class="bubble">Xin chào! Tôi là trợ lý AI của VietTravel. Tôi có thể hỗ trợ bạn:
+
+• <strong>Tra cứu booking</strong> (mã BK-XXXX)
+• <strong>Tra cứu khách sạn</strong> (mã HTL-XXX)
+• <strong>Tra cứu khách hàng</strong> (mã CUST-XXXX)
+• <strong>Hỏi về visa, hoàn tiền, thanh toán, bảo hiểm</strong>
+• <strong>Tạo ticket hỗ trợ</strong> (cần xác nhận)
+
+Gõ tin nhắn để bắt đầu nhé!</div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <textarea
+        id="msg-input"
+        placeholder="Gõ tin nhắn... (Enter để gửi, Shift+Enter xuống dòng)"
+        rows="1"
+        maxlength="4000"
+      ></textarea>
+      <button class="send-btn" id="send-btn" title="Gửi (Enter)">↑</button>
+    </div>
+  </div>
+
+  <!-- Right sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">📂 Sessions</div>
+    <div class="sidebar-content">
+      <div id="session-list" class="session-list">
+        <div class="empty-sidebar">Chưa có session nào.<br/>Gửi tin nhắn để tạo.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sidebar-title">🔍 Last Turn Trace</div>
+    <div class="sidebar-content">
+      <div id="trace-panel">
+        <div class="empty-sidebar">Chưa có turn nào được ghi.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── State ────────────────────────────────────────────────────────────────
+  let currentSessionId = null;
+  let isLoading = false;
+
+  // ── DOM refs ─────────────────────────────────────────────────────────────
+  const messagesEl   = document.getElementById('messages');
+  const inputEl     = document.getElementById('msg-input');
+  const sendBtn     = document.getElementById('send-btn');
+  const providerEl  = document.getElementById('provider-select');
+  const versionEl   = document.getElementById('version-select');
+  const sessionIdEl = document.getElementById('session-id');
+  const sessionListEl = document.getElementById('session-list');
+  const tracePanelEl = document.getElementById('trace-panel');
+  const statusDotEl  = document.getElementById('status-dot');
+  const statusTextEl = document.getElementById('status-text');
+  const headerVerEl  = document.getElementById('header-version');
+  const apiDotEl     = document.getElementById('api-dot');
+  const warningBannerEl = document.getElementById('warning-banner');
+  const enableDemoBtnEl = document.getElementById('enable-demo-btn');
+  const dismissBannerBtnEl = document.getElementById('dismiss-banner-btn');
+  const demoPillEl   = document.getElementById('demo-pill');
+
+  let isDemoMode = false;
+  let bannerDismissed = false;
+
+  // ── Helpers ─────────────────────────────────────────────────────────────
+  function scrollBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function formatTime() {
+    return new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+  }
+
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function jsonPretty(obj) {
+    return JSON.stringify(obj, null, 2);
+  }
+
+  function addMessage(role, content, extra = {}) {
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = escapeHtml(content || '').replace(/\n/g, '<br/>');
+    div.appendChild(bubble);
+    messagesEl.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function addToolBlock(toolCalls, toolResults) {
+    for (const tc of toolCalls) {
+      const result = toolResults.find(r => r.tool === tc.name) || {};
+      const isAwaiting = result.awaiting_user || false;
+      const isError = !!result.error;
+      const resultData = result.result;
+
+      const block = document.createElement('div');
+      block.className = 'tool-call';
+      block.innerHTML = `
+        <div class="tool-header">
+          <span class="tool-icon">⚙️</span>
+          <span class="tool-name">${escapeHtml(tc.name)}</span>
+          <span class="tool-status ${isAwaiting ? 'running' : 'done'}">
+            ${isAwaiting ? '⏳ awaiting_user' : isError ? '❌ error' : '✅ done'}
+          </span>
+        </div>
+        <div class="tool-body">
+          <div class="trace-title" style="font-size:10px;color:#64748b;margin-bottom:4px;">ARGS</div>
+          <div class="tool-args">${escapeHtml(jsonPretty(tc.args))}</div>
+          ${resultData || result.error ? `
+            <div class="trace-title" style="font-size:10px;color:#64748b;margin:8px 0 4px;">RESULT</div>
+            <div class="tool-result ${isError ? 'error' : ''} ${isAwaiting ? 'awaiting' : ''}">${escapeHtml(jsonPretty(isError ? result : resultData))}</div>
+          ` : ''}
+        </div>
+      `;
+      messagesEl.appendChild(block);
+      scrollBottom();
+    }
+  }
+
+  function addStatusBadge(status, assistantText) {
+    const div = document.createElement('div');
+    div.style.marginTop = '4px';
+    div.innerHTML = `<span class="status-badge ${status}">${STATUS_LABELS[status] || status}</span>`;
+    if (assistantText) {
+      const p = document.createElement('p');
+      p.style.cssText = 'margin-top:6px;font-size:12px;color:var(--text2);font-style:italic;';
+      p.textContent = assistantText;
+      div.appendChild(p);
+    }
+    messagesEl.appendChild(div);
+    scrollBottom();
+  }
+
+  function addErrorCard(title, detail) {
+    const div = document.createElement('div');
+    div.className = 'error-card';
+    div.innerHTML = `
+      <div class="err-title">⚠️ ${escapeHtml(title || 'Lỗi')}</div>
+      ${detail ? `<div class="err-detail">${escapeHtml(detail)}</div>` : ''}
+    `;
+    messagesEl.appendChild(div);
+    scrollBottom();
+  }
+
+  const STATUS_LABELS = {
+    'waiting_for_user': '⏳ Chờ phản hồi user',
+    'answered': '✅ Đã trả lời',
+    'max_tool_rounds': '🔄 Đạt giới hạn vòng tool',
+    'provider_error': '❌ Lỗi provider',
+  };
+
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'msg assistant';
+    div.id = 'typing-indicator';
+    div.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+    messagesEl.appendChild(div);
+    scrollBottom();
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  // ── Trace panel ──────────────────────────────────────────────────────────
+  function updateTrace(response) {
+    if (!response.rounds || response.rounds.length === 0) {
+      tracePanelEl.innerHTML = '<div class="empty-sidebar">No trace data.</div>';
+      return;
+    }
+    let html = '';
+    for (const round of response.rounds) {
+      html += `
+        <div class="trace-round">
+          <div class="trace-round-header">Round ${round.round}</div>
+          <div class="trace-round-body">
+            ${round.tool_calls && round.tool_calls.length > 0
+              ? round.tool_calls.map(tc =>
+                  `<div class="trace-item"><span class="label">TOOL</span><span class="value">${escapeHtml(tc.name)}(${JSON.stringify(tc.args)})}</span></div>`
+                ).join('')
+              : `<div class="trace-item"><span class="label">TEXT</span><span class="value">${escapeHtml(round.assistant_text || '—')}</span></div>`
+            }
+          </div>
+        </div>
+      `;
+    }
+    tracePanelEl.innerHTML = html;
+  }
+
+  // ── Session list ─────────────────────────────────────────────────────────
+  async function refreshSessions() {
+    try {
+      const resp = await fetch('/api/sessions');
+      const data = await resp.json();
+      if (!data.sessions || data.sessions.length === 0) {
+        sessionListEl.innerHTML = '<div class="empty-sidebar">Chưa có session nào.<br/>Gửi tin nhắn để tạo.</div>';
+        return;
+      }
+      sessionListEl.innerHTML = data.sessions.map(s => `
+        <div class="session-item ${s.session_id === currentSessionId ? 'active' : ''}"
+             onclick="switchSession('${s.session_id}')">
+          <div class="s-id">#${s.session_id}</div>
+          <div class="s-meta">${s.version} · ${s.provider} · ${s.turn_count} turns</div>
+          <div class="s-turns">${s.last_message ? escapeHtml(s.last_message.slice(0, 40)) + '…' : '—'}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      console.error('Failed to load sessions:', e);
+    }
+  }
+
+  async function switchSession(id) {
+    currentSessionId = id;
+    sessionIdEl.textContent = `#${id}`;
+    try {
+      const resp = await fetch(`/api/sessions/${id}`);
+      const data = await resp.json();
+      messagesEl.innerHTML = '';
+      for (const msg of data.messages) {
+        if (msg.role === 'system') continue;
+        if (msg.role === 'user') {
+          addMessage('user', msg.content);
+        } else if (msg.role === 'assistant') {
+          // Try to extract tool calls from TOOL_CALLS_JSON block
+          const toolMatch = msg.content && msg.content.match(/TOOL_CALLS_JSON:\s*([\s\S]+)/);
+          const textOnly = msg.content ? msg.content.replace(/TOOL_CALLS_JSON:\s*[\s\S]+/, '').trim() : '';
+          if (textOnly) addMessage('assistant', textOnly);
+          // Tool calls from history are not re-rendered in this simple UI
+        }
+      }
+      if (data.turns && data.turns.length > 0) {
+        updateTrace(data.turns[data.turns.length - 1]);
+      }
+    } catch(e) {
+      console.error('Failed to load session:', e);
+    }
+    refreshSessions();
+  }
+
+  // ── Health check ─────────────────────────────────────────────────────────
+  async function checkHealth() {
+    try {
+      const resp = await fetch('/health');
+      const data = await resp.json();
+      const hasKey = data.gemini_key || data.openai_key || data.openrouter_key || data.anthropic_key;
+      if (hasKey) {
+        statusDotEl.className = 'dot ok';
+        statusTextEl.textContent = data.gemini_key ? 'Gemini OK' : 'API OK';
+        apiDotEl.className = 'dot ok';
+        warningBannerEl.classList.add('hidden');
+      } else {
+        statusDotEl.className = 'dot error';
+        statusTextEl.textContent = 'No API Key';
+        apiDotEl.className = 'dot error';
+        if (!bannerDismissed) warningBannerEl.classList.remove('hidden');
+      }
+    } catch(e) {
+      statusDotEl.className = 'dot error';
+      statusTextEl.textContent = 'Offline';
+    }
+  }
+
+  function enableDemoMode() {
+    isDemoMode = true;
+    providerEl.value = 'demo';
+    demoPillEl.classList.remove('hidden');
+    warningBannerEl.classList.add('hidden');
+    statusDotEl.className = 'dot ok';
+    statusTextEl.textContent = 'Demo Mode';
+    apiDotEl.className = 'dot ok';
+    // Reset session
+    currentSessionId = null;
+    sessionIdEl.textContent = 'No session';
+    messagesEl.innerHTML = '';
+    addMessage('assistant', '🎭 Đã bật **Demo Mode**. Gõ tin nhắn để test:\n\n• "Tra cứu BK-1001"\n• "Thông tin khách sạn HTL-NT5"\n• "Visa có cần không?"\n• "Tạo ticket cho lỗi phòng"');
+  }
+
+  enableDemoBtnEl.addEventListener('click', enableDemoMode);
+  dismissBannerBtnEl.addEventListener('click', () => {
+    bannerDismissed = true;
+    warningBannerEl.classList.add('hidden');
+  });
+
+  // ── Send message ─────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+
+    addMessage('user', text);
+    addTyping();
+
+    try {
+      const body = {
+        message: text,
+        session_id: currentSessionId,
+        version: versionEl.value,
+        provider: providerEl.value,
+      };
+      const endpoint = isDemoMode ? '/api/demo/chat' : '/api/chat';
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      removeTyping();
+
+      // Update session
+      currentSessionId = data.session_id;
+      sessionIdEl.textContent = `#${data.session_id}`;
+      headerVerEl.textContent = versionEl.value;
+
+      // Show error card if provider error
+      if (data.status === 'provider_error') {
+        addErrorCard('Provider error', data.error || 'Unknown error');
+        return;
+      }
+
+      // Render tool calls + results
+      if (data.rounds) {
+        for (const round of data.rounds) {
+          if (round.tool_calls && round.tool_calls.length > 0) {
+            addToolBlock(round.tool_calls, round.tool_results || []);
+          }
+        }
+      }
+
+      // Render assistant text
+      if (data.assistant_text) {
+        addMessage('assistant', data.assistant_text);
+      }
+
+      // Status badge
+      addStatusBadge(data.status, null);
+
+      // Update trace
+      updateTrace(data);
+
+    } catch(err) {
+      removeTyping();
+      addErrorCard('Không gửi được', err.message);
+    } finally {
+      isLoading = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+      refreshSessions();
+    }
+  }
+
+  // ── Event listeners ───────────────────────────────────────────────────────
+  sendBtn.addEventListener('click', sendMessage);
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+  });
+
+  // Provider / version change — start new session
+  providerEl.addEventListener('change', () => {
+    if (currentSessionId) {
+      currentSessionId = null;
+      sessionIdEl.textContent = 'No session';
+      messagesEl.innerHTML = '';
+      messagesEl.innerHTML = `
+        <div class="msg assistant" id="welcome-msg">
+          <div class="bubble">Session đã được reset do thay đổi provider/version. Gửi tin nhắn để bắt đầu session mới.</div>
+        </div>`;
+    }
+  });
+  versionEl.addEventListener('change', () => {
+    headerVerEl.textContent = versionEl.value;
+    if (currentSessionId) {
+      currentSessionId = null;
+      sessionIdEl.textContent = 'No session';
+      messagesEl.innerHTML = '';
+      messagesEl.innerHTML = `
+        <div class="msg assistant" id="welcome-msg">
+          <div class="bubble">Session đã được reset do thay đổi provider/version. Gửi tin nhắn để bắt đầu session mới.</div>
+        </div>`;
+    }
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  checkHealth();
+  refreshSessions();
+  inputEl.focus();
+</script>
+</body>
+</html>
