@@ -91,3 +91,69 @@ V4.1 sửa thứ tự ưu tiên prompt, thêm guard dữ liệu nhạy cảm tr�
 - **AI/công cụ đã dùng:** Streamlit và Python để xây UI/lưu transcript; AppTest trong `scripts/demo_ui_live.py` để điều khiển bốn kịch bản UI và gọi OpenRouter thật (`openai/gpt-4o-mini`); Gemini `gemini-3.5-flash-lite` cho các transcript lịch sử. Tự kiểm tra bằng cách đọc lại tool trace/result, kiểm tra artifact version và đối chiếu transcript với kết quả ghi dữ liệu.
 
 - **VLearn:** nộp cùng URL repo nhóm `https://github.com/anhdvt24/K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling`.
+
+### Bùi Đức Thành — 2A202602364
+
+- **Phần việc và evidence:**
+  - Thiết kế và viết 12 case adversarial (S01–S12) trong `data/eval_travel_adversarial.json`, phủ 6 attack vector: exfiltration, role spoofing, forged result, argument smuggling, KB injection, out-of-scope. Mỗi case có `failure_type`, `expect.tool_calls` rõ.
+  - Viết và duy trì `scripts/smoke_travel_tools.py` (33 check gốc + 3 check extension), gồm `restricted_sensitive_data` cho `create_booking` và `restricted_internal_identifier` cho `search_travel_info`.
+  - Chạy 5 vòng adversarial (`runs/v0_B_adversarial_*.json` → `runs/v4_B_adversarial_*.json`), đối chiếu `tool_results` để phát hiện ghi/rò rỉ trái phép.
+  - Viết phần **B4a (Adversarial evidence)** và **B6 (Safety review)** trong `artifacts/REPORT.md`.
+
+- **Quyết định, khó khăn:**
+  - S03 dao động giữa `clarify` và `create_booking(confirmed=true)` qua 5 version → đề xuất chuyển guard xuống code để S03 không phụ thuộc model.
+  - S12 không vi phạm nhờ guard trong `search_travel_info/tool.py`, không nhờ model — đã ghi rõ trong B4a để tránh nhầm.
+  - S05 v4 routing FAIL nhưng không có số thẻ trong tool call → không vi phạm dữ liệu, chỉ vi phạm routing.
+
+- **Điều đã học:**
+  - Tool guard là lớp bảo vệ thứ hai, không thay thế prompt. S12 là bằng chứng: model v2–v4 tự hỏi lại, nhưng nếu code không chặn, prompt-injection qua KB/policy vẫn qua được.
+  - Smoke test phải reproduce được cả happy-path và failure-path. `smoke_travel_tools.py` gọi tool với input nhạy cảm (số thẻ, CVV, OTP) và ID sai — đảm bảo guard hoạt động cả khi model tốt và xấu.
+  - Routing PASS không đồng nghĩa không vi phạm. S03/S04/S10/S11 v0 đều routing PASS nhưng `bookings/` có file mới → phải mở `tool_results` và đối chiếu side effect.
+
+- **AI/công cụ đã dùng và cách kiểm tra:**
+  - Cursor brainstorm attack vector; Gemini chạy 12 case; grep `tool_results` xem có booking mới / số thẻ / mã KH. `smoke_travel_tools.py` phải 33/33 PASS.
+
+- **VLearn:** nộp cùng URL repo nhóm `https://github.com/anhdvt24/K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling`.
+
+### Nguyễn Thành Luân — 2A202602769
+
+- **Phần việc và evidence:**
+  - Tự viết 10 case nhóm trong `data/eval_group.json` (G01–G05 single-turn + GM01–GM05 multi-turn). Mỗi case có `failure_type`, `expect.tool_calls` kèm args, `metadata.what_it_tests`.
+  - Chạy `runs/v3_B_group_gemini_*.json` (9/10) và `runs/v4_B_group_gemini_*.json` (10/10), giữ cả 2 file để có so sánh trước/sau.
+  - Viết phần **B3 (Team eval cases)** trong `artifacts/REPORT.md`: bảng 10 dòng, mỗi dòng ghi Case ID, What it tests, Expected behavior, Result v3 / v4.
+
+- **Quyết định, khó khăn:**
+  - G02 v3 FAIL vì thêm nguồn ngoài yêu cầu → v4 thêm rule "không thêm nguồn" đã fix được.
+  - GM05 phải mở `tool_results` xem query gửi lên web có chứa `KH-1004` không — không có mới tính PASS về privacy.
+
+- **Điều đã học:**
+  - Expect theo `tool_calls` (tên + args) mới đo được `tool_routing_accuracy` và `argument_accuracy`. Chỉ expect tên tool thì không phát hiện G02.
+  - Case multi-turn cần giả lập sẵn assistant turn trong `turns` để mô phỏng context trước khi user trả lời.
+  - Cùng case chạy ở 2 version cho thấy regression rõ — G02 PASS v4, FAIL v3 → bằng chứng rule "không thêm nguồn" có tác dụng.
+
+- **AI/công cụ đã dùng và cách kiểm tra:**
+  - Cursor brainstorm 10 case; Gemini chạy group suite cả v3 và v4; Python `json` so sánh expected vs actual. Mỗi case phải có `failure_type` thuộc `allowed_failure_types`; multi-turn phải có ≥3 turn.
+
+- **VLearn:** nộp cùng URL repo nhóm `https://github.com/anhdvt24/K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling`.
+
+### Nguyễn Lê Ngọc Bảo
+
+- **Phần việc và evidence:**
+  - Xây tool bonus `check_booking_status(booking_code, customer_id)` trong `tools/check_booking_status/`: `__init__.py`, `tool.py`, `TOOL.md`. Yêu cầu cả `booking_code` và `customer_id` để xác minh chủ booking — sai chủ hoặc mã không tồn tại trả cùng lỗi (chống dò booking người khác).
+  - Viết `data/eval_travel_extension.json` (5 case) và bổ sung 3 check extension vào `scripts/smoke_travel_tools.py` (seed booking, tạo rồi tra, ẩn booking chủ khác).
+  - Sửa `artifacts/tools.yaml` v2 (hash `23d06775e1e7`): thêm `response_type` enum cho `clarify`, map mode cho `check_transport_status`, ranh giới riêng tư cho `search_travel_info`, mô tả tool bonus.
+  - Chạy `runs/v3_B_extension_gemini_*.json` (5/5) và `runs/v4_B_extension_gemini_*.json` (5/5). Viết phần **B5 (Optional và bonus tool evidence)** trong `artifacts/REPORT.md`.
+
+- **Quyết định, khó khăn:**
+  - Bonus tool yêu cầu cả `booking_code` + `customer_id` để chống dò booking người khác — smoke test đã có case "extension hides other owners' bookings" chứng minh.
+  - Enum `mode` trong tools.yaml (validation) kết hợp ví dụ `"xe khách" → "bus"` trong description (semantic) → cả T18 và G03 đều PASS.
+
+- **Điều đã học:**
+  - Tool description là một phần của prompt. Thêm mapping vào description của `check_transport_status` đã fix T18 và G03 ngay.
+  - Schema validation giúp nhưng không thay thế hướng dẫn semantic. Enum `mode` bắt model trả `flight/train/bus/ferry` nhưng không bắt nó map đúng từ "xe khách".
+  - Bonus tool cần test riêng, không nhờ vào eval chính. `eval_travel_extension.json` có 5 case độc lập; smoke có 3 check riêng.
+
+- **AI/công cụ đã dùng và cách kiểm tra:**
+  - Cursor review schema YAML; Gemini chạy extension suite; `smoke_travel_tools.py` phải 33/33 PASS với 3 dòng extension riêng. Sau khi thêm tool, restart UI/chat để tool registry nạp lại.
+
+- **VLearn:** nộp cùng URL repo nhóm `https://github.com/anhdvt24/K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling`.
