@@ -90,4 +90,4 @@ V4.1 sửa thứ tự ưu tiên prompt, thêm guard dữ liệu nhạy cảm tr�
 
 - **AI/công cụ đã dùng:** Streamlit và Python để xây UI/lưu transcript; AppTest trong `scripts/demo_ui_live.py` để điều khiển bốn kịch bản UI và gọi OpenRouter thật (`openai/gpt-4o-mini`); Gemini `gemini-3.5-flash-lite` cho các transcript lịch sử. Tự kiểm tra bằng cách đọc lại tool trace/result, kiểm tra artifact version và đối chiếu transcript với kết quả ghi dữ liệu.
 
-- **VLearn:** nộp cùng URL repo nhóm `https://github.com/anhdvt24/K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling`; thời điểm nộp riêng của thành viên cần Nguyễn Ngọc Linh xác nhận.
+- **VLearn:** nộp cùng URL repo nhóm `https://github.com/anhdvt24/K4-L3-DAY04-DangVanThaiAnh-2A202602407-PromptEngineeringToolCalling`.
