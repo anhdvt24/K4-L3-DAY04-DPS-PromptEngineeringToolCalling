@@ -17,9 +17,11 @@ from chat import ARTIFACTS_DIR, ROOT, now_iso, run_model_tool_loop, safe_slug, t
 from providers import make_provider
 from tools import load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
+from safety import redact
+from booking_consent import BookingConsent
 
 
-PROVIDERS = ["gemini", "openrouter", "openai", "anthropic"]
+PROVIDERS = ["openrouter", "gemini", "openai", "anthropic"]
 
 
 def is_error(result: Any) -> bool:
@@ -38,6 +40,7 @@ def new_session(provider_name: str, version: str, model: str, history_window: in
         tools=to_openai_tools(load_tool_declarations(tools_path)),
         model=model or None,
         history=[],
+        booking_consent=BookingConsent(),
         transcript_path=ROOT / "transcripts" / f"{transcript_id}.transcript.json",
         transcript={
             "transcript_id": transcript_id,
@@ -57,8 +60,9 @@ def new_session(provider_name: str, version: str, model: str, history_window: in
 
 
 def render_turn(turn: dict[str, Any]) -> None:
+    turn = redact(turn)
     with st.chat_message("user"):
-        st.markdown(turn["user"])
+        st.markdown(redact(turn["user"]))
     with st.chat_message("assistant"):
         if turn["status"] == "provider_error":
             st.error(f"Provider error: {turn['error']}")
@@ -73,7 +77,7 @@ def render_turn(turn: dict[str, Any]) -> None:
                 status = "ERROR" if failed else ("NOT RUN" if event is None else "OK")
                 with st.expander(f"[{status}] round {round_record['round']} · tool `{call['name']}`", expanded=failed):
                     st.caption("Input (args sent by the model)")
-                    st.json(call["args"])
+                    st.json(redact(call["args"]))
                     if event is None:
                         st.warning("Not executed: the agent paused earlier in this round to wait for the user.")
                     elif failed:
@@ -90,7 +94,7 @@ st.set_page_config(page_title="Sao Viet Travel Assistant", layout="wide")
 with st.sidebar:
     st.header("Session")
     provider_name = st.selectbox("Provider", PROVIDERS)
-    version = st.text_input("Artifact version label", value="v3")
+    version = st.text_input("Artifact version label", value="v4.1")
     model = st.text_input("Model override (optional)", value="")
     history_window = int(st.number_input("History window (turn pairs)", min_value=0, max_value=20, value=5))
     max_tool_rounds = int(st.number_input("Max tool rounds", min_value=1, max_value=8, value=4))
@@ -133,6 +137,7 @@ if user_text := st.chat_input("Hỏi về tour, chuyến bay, cẩm nang, chính
                 tools=st.session_state.tools,
                 model=st.session_state.model,
                 max_tool_rounds=transcript["max_tool_rounds"],
+                consent=st.session_state.booking_consent,
             ))
             st.session_state.history += [
                 {"role": "user", "content": user_text},
